@@ -528,9 +528,6 @@ public class MeshCutting : MonoBehaviour
         Vector2 uv0 = Vector2.Lerp(forwardVertex.uv, backVertex0.uv, slicingRefer0);
         Vector4 tangent0 = Vector4.Lerp(forwardVertex.tangent, backVertex0.tangent, slicingRefer0);
         tangent0.w = Mathf.Sign(tangent0.w);
-        slicingPos0.x = (float)Math.Round(slicingPos0.x, 3);
-        slicingPos0.y = (float)Math.Round(slicingPos0.y, 3);
-        slicingPos0.z = (float)Math.Round(slicingPos0.z, 3);
         slicingVertex0.vertex = slicingPos0;
         slicingVertex0.normal = normal0;
         slicingVertex0.uv = uv0;
@@ -545,9 +542,6 @@ public class MeshCutting : MonoBehaviour
         Vector2 uv1 = Vector2.Lerp(forwardVertex.uv, backVertex1.uv, slicingRefer1);
         Vector4 tangent1 = Vector4.Lerp(forwardVertex.tangent, backVertex1.tangent, slicingRefer1);
         tangent1.w = Mathf.Sign(tangent1.w);
-        slicingPos1.x = (float)Math.Round(slicingPos1.x, 3);
-        slicingPos1.y = (float)Math.Round(slicingPos1.y, 3);
-        slicingPos1.z = (float)Math.Round(slicingPos1.z, 3);
         slicingVertex1.vertex = slicingPos1;
         slicingVertex1.normal = normal1;
         slicingVertex1.uv = uv1;
