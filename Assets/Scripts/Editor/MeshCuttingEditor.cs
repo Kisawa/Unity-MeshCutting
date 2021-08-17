@@ -51,9 +51,16 @@ public class MeshCuttingEditor : Editor
         layerMaskProp.intValue = EditorGUILayout.MaskField(layerMaskProp.intValue, layers);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.PropertyField(combinedSliceProp);
-        EditorGUILayout.PropertyField(sliceToSubMeshProp);
-        if(sliceToSubMeshProp.boolValue)
-            EditorGUILayout.PropertyField(sliceMatProp);
+        if (combinedSliceProp.boolValue)
+        {
+            EditorGUILayout.PropertyField(sliceToSubMeshProp);
+            if (sliceToSubMeshProp.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(sliceMatProp);
+                EditorGUI.indentLevel--;
+            }
+        }
         serializedObject.ApplyModifiedProperties();
     }
 }

@@ -314,7 +314,7 @@ public class MeshCutting : MonoBehaviour
                 else
                 {
                     List<Vector2> uvs = CalcUV(normal, extraVertex);
-                    CombineTriangle(extraVertex, uvs, normal, a_meshCache, b_meshCache, true);
+                    CombineTriangle(extraVertex, uvs, normal, a_meshCache, b_meshCache);
                 }
             }
         }
@@ -326,7 +326,7 @@ public class MeshCutting : MonoBehaviour
                 List<Vector2> uvs = CalcUV(normal, extraVertex);
                 SliceMeshCache a_sliceMeshCache = new SliceMeshCache();
                 SliceMeshCache b_sliceMeshCache = new SliceMeshCache();
-                CombineTriangle(extraVertex, uvs, normal, a_sliceMeshCache, b_sliceMeshCache, true);
+                CombineTriangle(extraVertex, uvs, normal, a_sliceMeshCache, b_sliceMeshCache);
                 a_Cache.SetSubMeshCache(a_sliceMeshCache);
                 b_Cache.SetSubMeshCache(b_sliceMeshCache);
             }
@@ -374,14 +374,14 @@ public class MeshCutting : MonoBehaviour
         return (a_obj, b_obj);
     }
 
-    void CombineTriangle(List<Vector3> vertices, List<Vector2> uvs, Vector3 normal, SliceMeshCache a_meshCache, SliceMeshCache b_meshCache, bool root)
+    void CombineTriangle(List<Vector3> vertices, List<Vector2> uvs, Vector3 normal, SliceMeshCache a_meshCache, SliceMeshCache b_meshCache)
     {
-        if (vertices.Count < 2)
+        if (vertices.Count < 3)
             return;
         Vector3 vertex0 = vertices[0];
         Vector3 vertex1 = vertices[1];
-        Vector2 uv0 = uvs[0];
-        Vector2 uv1 = uvs[1];
+        Vector3 uv0 = uvs[0];
+        Vector3 uv1 = uvs[1];
         vertices.RemoveAt(0);
         vertices.RemoveAt(0);
         uvs.RemoveAt(0);
@@ -389,103 +389,34 @@ public class MeshCutting : MonoBehaviour
         while (vertices.Count > 0)
         {
             VertexData a_vertex0 = new VertexData() { vertex = vertex0, normal = normal, uv = uv0 };
-            VertexData a_vertex1 = new VertexData() { vertex = vertex1, normal = normal, uv = uv1 };
             VertexData b_vertex0 = new VertexData() { vertex = vertex0, normal = -normal, uv = uv0 };
+            VertexData a_vertex1 = new VertexData() { vertex = vertex1, normal = normal, uv = uv1 };
             VertexData b_vertex1 = new VertexData() { vertex = vertex1, normal = -normal, uv = uv1 };
+            Vector3 vertex2 = vertices[0];
+            Vector3 uv2 = uvs[0];
+            vertices.RemoveAt(0);
+            uvs.RemoveAt(0);
+            VertexData a_vertex2 = new VertexData() { vertex = vertex2, normal = normal, uv = uv2 };
+            VertexData b_vertex2 = new VertexData() { vertex = vertex2, normal = -normal, uv = uv2 };
+
             Vector3 dir = Vector3.Normalize(vertex1 - vertex0);
-            if (vertices.Count > 1)
+            Vector3 _dir = Vector3.Normalize(vertex2 - vertex0);
+            if (Vector3.Dot(normal, Vector3.Cross(dir, _dir)) >= 0)
             {
-                int sameIndex = vertices.IndexOf(vertex1);
-                if (sameIndex > -1)
-                {
-                    Vector3 vertex2;
-                    Vector2 uv2;
-                    if (sameIndex % 2 == 0)
-                    {
-                        vertex2 = vertices[sameIndex + 1];
-                        uv2 = uvs[sameIndex + 1];
-                        vertices.RemoveAt(sameIndex);
-                        vertices.RemoveAt(sameIndex);
-                        uvs.RemoveAt(sameIndex);
-                        uvs.RemoveAt(sameIndex);
-                    }
-                    else
-                    {
-                        vertex2 = vertices[sameIndex - 1];
-                        uv2 = uvs[sameIndex - 1];
-                        vertices.RemoveAt(sameIndex);
-                        vertices.RemoveAt(sameIndex - 1);
-                        uvs.RemoveAt(sameIndex);
-                        uvs.RemoveAt(sameIndex - 1);
-                    }
-                    VertexData a_vertex2 = new VertexData() { vertex = vertex2, normal = normal, uv = uv2 };
-                    VertexData b_vertex2 = new VertexData() { vertex = vertex2, normal = -normal, uv = uv2 };
-                    Vector3 _dir = Vector3.Normalize(vertex2 - vertex0);
-                    if (Vector3.Dot(normal, Vector3.Cross(dir, _dir)) >= 0)
-                    {
-                        CalcTangent(ref a_vertex0, ref a_vertex1, ref a_vertex2);
-                        a_meshCache.SetTriangle(a_vertex0, a_vertex1, a_vertex2);
-                        CalcTangent(ref b_vertex0, ref b_vertex2, ref b_vertex1);
-                        b_meshCache.SetTriangle(b_vertex0, b_vertex2, b_vertex1);
-                    }
-                    else
-                    {
-                        CalcTangent(ref a_vertex0, ref a_vertex2, ref a_vertex1);
-                        a_meshCache.SetTriangle(a_vertex0, a_vertex2, a_vertex1);
-                        CalcTangent(ref b_vertex0, ref b_vertex1, ref b_vertex2);
-                        b_meshCache.SetTriangle(b_vertex0, b_vertex1, b_vertex2);
-                    }
-                    if (vertices.IndexOf(vertex1) > -1)
-                    {
-                        vertices.Insert(0, vertex1);
-                        vertices.Insert(0, vertex0);
-                        uvs.Insert(0, uv1);
-                        uvs.Insert(0, uv0);
-                        CombineTriangle(vertices, uvs, normal, a_meshCache, b_meshCache, false);
-                    }
-                    vertex1 = vertex2;
-                    uv1 = uv2;
-                }
-                else if (root)
-                {
-                    if (vertices.IndexOf(vertex0) > -1)
-                    {
-                        vertices.Insert(0, vertex0);
-                        vertices.Insert(0, vertex1);
-                        uvs.Insert(0, uv0);
-                        uvs.Insert(0, uv1);
-                        CombineTriangle(vertices, uvs, normal, a_meshCache, b_meshCache, true);
-                    }
-                    else
-                        CombineTriangle(vertices, uvs, normal, a_meshCache, b_meshCache, true);
-                }
-                else
-                    break;
+                CalcTangent(ref a_vertex0, ref a_vertex1, ref a_vertex2);
+                a_meshCache.SetTriangle(a_vertex0, a_vertex1, a_vertex2);
+                CalcTangent(ref b_vertex0, ref b_vertex2, ref b_vertex1);
+                b_meshCache.SetTriangle(b_vertex0, b_vertex2, b_vertex1);
             }
             else
             {
-                Vector3 vertex2 = vertices[0];
-                Vector2 uv2 = uvs[0];
-                vertices.RemoveAt(0);
-                uvs.RemoveAt(0);
-                VertexData a_vertex2 = new VertexData() { vertex = vertex2, normal = normal, uv = uv2 };
-                VertexData b_vertex2 = new VertexData() { vertex = vertex2, normal = -normal, uv = uv2 };
-                Vector3 _dir = vertex2 - vertex0;
-                if (Vector3.Dot(normal, Vector3.Cross(dir, _dir)) >= 0)
-                {
-                    CalcTangent(ref a_vertex0, ref a_vertex1, ref a_vertex2);
-                    a_meshCache.SetTriangle(a_vertex0, a_vertex1, a_vertex2);
-                    CalcTangent(ref b_vertex0, ref b_vertex2, ref b_vertex1);
-                    b_meshCache.SetTriangle(b_vertex0, b_vertex2, b_vertex1);
-                }
-                else
-                {
-                    CalcTangent(ref a_vertex0, ref a_vertex2, ref a_vertex1);
-                    a_meshCache.SetTriangle(a_vertex0, a_vertex2, a_vertex1);
-                    CalcTangent(ref b_vertex0, ref b_vertex1, ref b_vertex2);
-                    b_meshCache.SetTriangle(b_vertex0, b_vertex1, b_vertex2);
-                }
+                CalcTangent(ref a_vertex0, ref a_vertex2, ref a_vertex1);
+                a_meshCache.SetTriangle(a_vertex0, a_vertex2, a_vertex1);
+                CalcTangent(ref b_vertex0, ref b_vertex1, ref b_vertex2);
+                b_meshCache.SetTriangle(b_vertex0, b_vertex1, b_vertex2);
             }
+            vertex1 = vertex2;
+            uv1 = uv2;
         }
     }
 
