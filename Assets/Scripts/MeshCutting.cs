@@ -148,7 +148,7 @@ public class MeshCutting : MonoBehaviour
                     children.Item1.transform.SetParent(rootSliceObj.Item1.transform);
                 if (children.Item2 != null)
                     children.Item2.transform.SetParent(rootSliceObj.Item2.transform);
-                if (hasSelfInfo && _info != null)
+                if (hasSelfInfo && _info != null && _info != rootInfo)
                     _info.EndCuttingCallback?.Invoke(children.Item1, children.Item2);
             }
             if (rootInfo != null)
