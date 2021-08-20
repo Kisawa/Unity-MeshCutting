@@ -12,9 +12,11 @@ public class MeshCutting : MonoBehaviour
     public float MaxStep = 5;
     [Range(1, 10)]
     public float MaxDepth = 10;
+    public ParentAction _ParentAction = ParentAction.Destroy;
     public bool CombinedSlice = true;
     public bool SliceToSubMesh = false;
     public Material SliceMat;
+    public TwoGameObjectEvent EndCuttingCallback;
 
     new Camera camera;
     Vector3 startScreenPos, endScreenPos;
@@ -99,6 +101,7 @@ public class MeshCutting : MonoBehaviour
         {
             MeshCuttingInfo rootInfo = item.Key.GetComponent<MeshCuttingInfo>();
             List<Transform> trans = new List<Transform>();
+            List<Vector3> scaleCover = new List<Vector3>();
             List<Mesh> meshs = new List<Mesh>();
             List<Material[]> mats = new List<Material[]>();
             MeshFilter[] meshFilters = item.Key.GetComponentsInChildren<MeshFilter>();
@@ -106,6 +109,7 @@ public class MeshCutting : MonoBehaviour
             {
                 MeshFilter meshFilter = meshFilters[i];
                 trans.Add(meshFilter.transform);
+                scaleCover.Add(meshFilter.transform.lossyScale);
                 meshs.Add(meshFilter.mesh);
                 MeshRenderer meshRenderer = meshFilter.GetComponent<MeshRenderer>();
                 if (meshRenderer == null)
@@ -121,12 +125,14 @@ public class MeshCutting : MonoBehaviour
                 skinnedMesh.BakeMesh(mesh);
                 meshs.Add(mesh);
                 trans.Add(skinnedMesh.transform);
+                scaleCover.Add(Vector3.one);
                 mats.Add(skinnedMesh.materials);
             }
             (GameObject, GameObject) rootSliceObj = initRootSliceObj(item.Key);
             for (int i = 0; i < meshs.Count; i++)
             {
                 Transform _trans = trans[i];
+                Vector3 _scaleCover = scaleCover[i];
                 Mesh _mesh = meshs[i];
                 Material[] _mat = mats[i];
                 MeshCuttingInfo _info = _trans.GetComponent<MeshCuttingInfo>();
@@ -137,7 +143,7 @@ public class MeshCutting : MonoBehaviour
                     hasSelfInfo = false;
                 }
                 Plane plane = new Plane(_trans.InverseTransformDirection(item.Value.Item1), _trans.InverseTransformPoint(item.Value.Item2));
-                (GameObject, GameObject) children = cuttingMesh(_mesh, plane, _trans, _mat, _info);
+                (GameObject, GameObject) children = cuttingMesh(_mesh, plane, _trans, _scaleCover, _mat, _info);
                 if (children.Item1 != null)
                     children.Item1.transform.SetParent(rootSliceObj.Item1.transform);
                 if (children.Item2 != null)
@@ -147,7 +153,21 @@ public class MeshCutting : MonoBehaviour
             }
             if (rootInfo != null)
                 rootInfo.EndCuttingCallback?.Invoke(rootSliceObj.Item1, rootSliceObj.Item2);
-            Destroy(item.Key.gameObject);
+            EndCuttingCallback?.Invoke(rootSliceObj.Item1, rootSliceObj.Item2);
+            ParentAction action;
+            if (rootInfo == null)
+                action = _ParentAction;
+            else
+                action = rootInfo._ParentAction;
+            switch (action)
+            {
+                case ParentAction.Disable:
+                    item.Key.gameObject.SetActive(false);
+                    break;
+                case ParentAction.Destroy:
+                    Destroy(item.Key.gameObject);
+                    break;
+            }
         }
     }
 
@@ -156,18 +176,16 @@ public class MeshCutting : MonoBehaviour
         GameObject rootA = new GameObject();
         rootA.transform.position = trans.position;
         rootA.transform.rotation = trans.rotation;
-        rootA.transform.localScale = trans.lossyScale;
         rootA.name = $"{trans.name}-SliceA";
 
         GameObject rootB = new GameObject();
         rootB.transform.position = trans.position;
         rootB.transform.rotation = trans.rotation;
-        rootB.transform.localScale = trans.lossyScale;
         rootB.name = $"{trans.name}-SliceB";
         return (rootA, rootB);
     }
     
-    (GameObject, GameObject) cuttingMesh(Mesh mesh, Plane plane, Transform trans, Material[] mats, MeshCuttingInfo info)
+    (GameObject, GameObject) cuttingMesh(Mesh mesh, Plane plane, Transform trans, Vector3 scaleCover, Material[] mats, MeshCuttingInfo info)
     {
         Vector3 normal = -plane.normal;
         bool combinedSlice = CombinedSlice;
@@ -358,7 +376,7 @@ public class MeshCutting : MonoBehaviour
             a_obj.AddComponent<MeshRenderer>().materials = _mat;
             a_obj.transform.position = trans.position;
             a_obj.transform.eulerAngles = trans.eulerAngles;
-            a_obj.transform.localScale = trans.localScale;
+            a_obj.transform.localScale = scaleCover;
         }
         GameObject b_obj = null;
         if (b_mesh != null)
@@ -369,7 +387,7 @@ public class MeshCutting : MonoBehaviour
             b_obj.AddComponent<MeshRenderer>().materials = _mat;
             b_obj.transform.position = trans.position;
             b_obj.transform.eulerAngles = trans.eulerAngles;
-            b_obj.transform.localScale = trans.localScale;
+            b_obj.transform.localScale = scaleCover;
         }
         return (a_obj, b_obj);
     }
@@ -757,4 +775,6 @@ public class MeshCutting : MonoBehaviour
         public Vector2 uv;
         public Vector4 tangent;
     }
+
+    public enum ParentAction { None, Disable, Destroy }
 }

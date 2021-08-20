@@ -216,6 +216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7c1f21de2d0055439c78651b7a485b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _ParentAction: 1
   CombinedSlice: 1
   SliceToSubMesh: 0
   SliceMat: {fileID: 0}
@@ -481,9 +482,13 @@ MonoBehaviour:
   Mask: 512
   MaxStep: 5
   MaxDepth: 10
+  _ParentAction: 2
   CombinedSlice: 1
   SliceToSubMesh: 1
   SliceMat: {fileID: 2100000, guid: 55d60adcc2bfd4d46b4fd9c07ed0f814, type: 2}
+  EndCuttingCallback:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &644364258 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 1b90139b64b3f6e40ac3443a1425ae98,

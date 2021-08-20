@@ -6,6 +6,7 @@ using UnityEngine;
 [CustomEditor(typeof(MeshCuttingInfo))]
 public class MeshCuttingInfoEditor : Editor
 {
+    SerializedProperty parentActionProp;
     SerializedProperty combinedSliceProp;
     SerializedProperty sliceToSubMeshProp;
     SerializedProperty sliceMatProp;
@@ -13,6 +14,7 @@ public class MeshCuttingInfoEditor : Editor
 
     private void OnEnable()
     {
+        parentActionProp = serializedObject.FindProperty("_ParentAction");
         combinedSliceProp = serializedObject.FindProperty("CombinedSlice");
         sliceToSubMeshProp = serializedObject.FindProperty("SliceToSubMesh");
         sliceMatProp = serializedObject.FindProperty("SliceMat");
@@ -22,6 +24,7 @@ public class MeshCuttingInfoEditor : Editor
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
+        EditorGUILayout.PropertyField(parentActionProp);
         EditorGUILayout.PropertyField(combinedSliceProp);
         if (combinedSliceProp.boolValue)
         {
@@ -33,6 +36,7 @@ public class MeshCuttingInfoEditor : Editor
                 EditorGUI.indentLevel--;
             }
         }
+        GUILayout.Space(10);
         EditorGUILayout.PropertyField(endCuttingCallbackProp);
         serializedObject.ApplyModifiedProperties();
     }

@@ -10,9 +10,11 @@ public class MeshCuttingEditor : Editor
     SerializedProperty maxStepProp;
     SerializedProperty maxDepthProp;
     SerializedProperty layerMaskProp;
+    SerializedProperty parentActionProp;
     SerializedProperty combinedSliceProp;
     SerializedProperty sliceToSubMeshProp;
     SerializedProperty sliceMatProp;
+    SerializedProperty endCuttingCallbackProp;
     string[] layers;
 
     private void OnEnable()
@@ -21,9 +23,11 @@ public class MeshCuttingEditor : Editor
         layerMaskProp = serializedObject.FindProperty("Mask");
         maxStepProp = serializedObject.FindProperty("MaxStep");
         maxDepthProp = serializedObject.FindProperty("MaxDepth");
+        parentActionProp = serializedObject.FindProperty("_ParentAction");
         combinedSliceProp = serializedObject.FindProperty("CombinedSlice");
         sliceToSubMeshProp = serializedObject.FindProperty("SliceToSubMesh");
         sliceMatProp = serializedObject.FindProperty("SliceMat");
+        endCuttingCallbackProp = serializedObject.FindProperty("EndCuttingCallback");
         List<string> _layers = new List<string>();
         _layers.AddRange(UnityEditorInternal.InternalEditorUtility.layers);
         _layers.Insert(3, "");
@@ -50,6 +54,7 @@ public class MeshCuttingEditor : Editor
         EditorGUILayout.LabelField("LayerMask:", GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.35f));
         layerMaskProp.intValue = EditorGUILayout.MaskField(layerMaskProp.intValue, layers);
         EditorGUILayout.EndHorizontal();
+        EditorGUILayout.PropertyField(parentActionProp);
         EditorGUILayout.PropertyField(combinedSliceProp);
         if (combinedSliceProp.boolValue)
         {
@@ -61,6 +66,8 @@ public class MeshCuttingEditor : Editor
                 EditorGUI.indentLevel--;
             }
         }
+        GUILayout.Space(10);
+        EditorGUILayout.PropertyField(endCuttingCallbackProp);
         serializedObject.ApplyModifiedProperties();
     }
 }

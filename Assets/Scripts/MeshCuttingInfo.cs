@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 public class MeshCuttingInfo : MonoBehaviour
 {
+    public MeshCutting.ParentAction _ParentAction = MeshCutting.ParentAction.Destroy;
     public bool CombinedSlice = true;
     public bool SliceToSubMesh = false;
     public Material SliceMat;
