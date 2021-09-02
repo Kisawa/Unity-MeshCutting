@@ -142,7 +142,10 @@ public class MeshCutting : MonoBehaviour
                     _info = rootInfo;
                     hasSelfInfo = false;
                 }
-                Plane plane = new Plane(_trans.InverseTransformDirection(item.Value.Item1), _trans.InverseTransformPoint(item.Value.Item2));
+                Matrix4x4 world2Local = Matrix4x4.TRS(_trans.position, _trans.rotation, _scaleCover).inverse;
+                Vector4 pos = item.Value.Item2;
+                pos.w = 1;
+                Plane plane = new Plane(_trans.InverseTransformDirection(item.Value.Item1), world2Local * pos);
                 (GameObject, GameObject) children = cuttingMesh(_mesh, plane, _trans, _scaleCover, _mat, _info);
                 if (children.Item1 != null)
                     children.Item1.transform.SetParent(rootSliceObj.Item1.transform);
