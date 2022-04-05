@@ -1,5 +1,4 @@
 # UnityMeshCutting  
-## Cutting mesh  
 Check out script MeshCutting and it has to be attached to a Camera component.  
 This example __support skin mesh__  
 ****
