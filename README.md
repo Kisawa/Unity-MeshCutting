@@ -1,5 +1,5 @@
 # UnityMeshCutting  
-Check out script MeshCutting and it has to be attached to a Camera component.  
+Check out script MeshCutting and it has to be attached to a Camera component, because this demo is going to be on screen.  
 This example __support skin mesh__  
 ****
 This demo can be used by swiping the game screen:  
